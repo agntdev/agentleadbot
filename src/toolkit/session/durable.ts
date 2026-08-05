@@ -154,6 +154,42 @@ export class ChatDO {
       return new Response(null, { status: 204 });
     }
 
+    if (url.pathname.startsWith("/leads/") && request.method === "POST") {
+      const action = url.pathname.slice("/leads/".length);
+      const body = (await request.json()) as Record<string, unknown>;
+      const ids = (await this.state.storage.get<string[]>("lead:ids")) ?? [];
+      if (action === "create") {
+        const id = typeof body.id === "string" ? body.id : "";
+        if (!id) return Response.json({ error: "invalid lead" }, { status: 400 });
+        await this.state.storage.put({ [`lead:${id}`]: body, "lead:ids": [id, ...ids] });
+        return Response.json({ ok: true });
+      }
+      if (action === "get") {
+        const id = typeof body.id === "string" ? body.id : "";
+        return Response.json((await this.state.storage.get(`lead:${id}`)) ?? null);
+      }
+      if (action === "list") {
+        const leads = await Promise.all(ids.map((id) => this.state.storage.get(`lead:${id}`)));
+        return Response.json(leads.filter((lead) => lead !== undefined));
+      }
+      if (action === "status") {
+        const id = typeof body.id === "string" ? body.id : "";
+        const lead = await this.state.storage.get<Record<string, unknown>>(`lead:${id}`);
+        if (!lead || (body.status !== "New" && body.status !== "Done")) return Response.json(null);
+        const updated = { ...lead, status: body.status };
+        await this.state.storage.put(`lead:${id}`, updated);
+        return Response.json(updated);
+      }
+      if (action === "delete") {
+        const id = typeof body.id === "string" ? body.id : "";
+        if ((await this.state.storage.get(`lead:${id}`)) === undefined) return Response.json(false);
+        await this.state.storage.delete(`lead:${id}`);
+        await this.state.storage.put("lead:ids", ids.filter((value) => value !== id));
+        return Response.json(true);
+      }
+      return Response.json({ error: "unknown lead action" }, { status: 404 });
+    }
+
     return new Response("not found", { status: 404 });
   }
 
