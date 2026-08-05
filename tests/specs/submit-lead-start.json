@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Submit a lead",
+    "steps": [
+      {
+        "expect": [
+          {
+            "method": "sendMessage",
+            "payload": {
+              "text": "Initiate lead submission flow"
+            }
+          }
+        ],
+        "send": {
+          "callback": "submit_lead:start"
+        }
+      }
+    ]
+  }
+]
