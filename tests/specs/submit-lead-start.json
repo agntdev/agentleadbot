@@ -1,20 +1,48 @@
 [
   {
-    "name": "Submit a lead",
+    "name": "lead submission confirms and saves the enquiry",
     "steps": [
       {
         "expect": [
           {
             "method": "sendMessage",
             "payload": {
-              "text": "Initiate lead submission flow"
+              "text": "What’s your name?"
             }
           }
         ],
         "send": {
           "callback": "submit_lead:start"
         }
+      },
+      {
+        "send": { "text": "Alex Morgan" },
+        "expect": [{ "method": "sendMessage", "payload": { "text": "What’s the best phone number to reach you on?" } }]
+      },
+      {
+        "send": { "text": "+1 415 555 0132" },
+        "expect": [{ "method": "sendMessage", "payload": { "text": "What can the agent help you with?" } }]
+      },
+      {
+        "send": { "callback": "lead:intent:buy" },
+        "expect": [{ "method": "sendMessage", "payload": { "text": "Add a short note about the property you need." } }]
+      },
+      {
+        "send": { "text": "Looking for a two-bedroom near downtown." },
+        "expect": [{ "method": "sendMessage", "payload": { "text": "Please confirm your lead details:\n\nName: Alex Morgan\nPhone: +1 415 555 0132\nInterest: Buy\nNote: Looking for a two-bedroom near downtown." } }]
+      },
+      {
+        "send": { "callback": "lead:confirm" },
+        "expect": [{ "method": "editMessageText", "payload": { "text": "Thanks — your details have been sent to the agent." } }]
       }
+    ]
+  },
+  {
+    "name": "invalid phone asks for a usable number",
+    "steps": [
+      { "send": { "callback": "submit_lead:start" }, "expect": [{ "method": "sendMessage", "payload": { "text": "What’s your name?" } }] },
+      { "send": { "text": "Alex" }, "expect": [{ "method": "sendMessage", "payload": { "text": "What’s the best phone number to reach you on?" } }] },
+      { "send": { "text": "not a phone" }, "expect": [{ "method": "sendMessage", "payload": { "text": "Enter a valid phone number, including the country code if needed." } }] }
     ]
   }
 ]

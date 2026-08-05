@@ -1,13 +1,13 @@
 [
   {
-    "name": "/admin",
+    "name": "/admin denies access when the owner setting is absent",
     "steps": [
       {
         "expect": [
           {
             "method": "sendMessage",
             "payload": {
-              "text": "Access private admin lead list (only for configured admin)"
+              "text": "Owner access isn't set up yet."
             }
           }
         ],
